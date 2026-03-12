@@ -1,0 +1,52 @@
+[
+  {
+    "id": "test-1",
+    "description": "Obvious PayPal phishing — spoofed domain with lookalike characters",
+    "sender": "security@paypa1-verify.com",
+    "senderDisplayName": "PayPal Security",
+    "subject": "Your account has been suspended",
+    "body": "Dear Customer, verify your account immediately.",
+    "links": ["http://paypal-secure.suspicious-site.xyz"],
+    "expectedResult": "dangerous"
+  },
+  {
+    "id": "test-2",
+    "description": "Legitimate Amazon shipping email",
+    "sender": "shipping@amazon.co.uk",
+    "senderDisplayName": "Amazon Shipping",
+    "subject": "Your order has shipped",
+    "body": "Hi Adedoyin, your order #4821-9937 has shipped.",
+    "links": ["https://amazon.co.uk/track/4821-9937"],
+    "expectedResult": "safe"
+  },
+  {
+    "id": "test-3",
+    "description": "Microsoft phishing — suspicious TLD",
+    "sender": "support@microsoft-account.xyz",
+    "senderDisplayName": "Microsoft Support",
+    "subject": "Unusual sign-in activity",
+    "body": "We detected unusual sign-in activity on your account.",
+    "links": ["http://microsoft-verify.xyz/login"],
+    "expectedResult": "dangerous"
+  },
+  {
+    "id": "test-4",
+    "description": "Unknown sender — not impersonating any brand",
+    "sender": "offers@exclusive-deals-uk.com",
+    "senderDisplayName": "Exclusive Deals UK",
+    "subject": "Congratulations! You've been selected",
+    "body": "You have been exclusively selected to receive a special offer.",
+    "links": ["http://exclusive-deals-uk.com/offer"],
+    "expectedResult": "suspicious"
+  },
+  {
+    "id": "test-5",
+    "description": "HMRC phishing — government impersonation",
+    "sender": "refund@hmrc-tax-refund.com",
+    "senderDisplayName": "HMRC Tax Refund",
+    "subject": "You are eligible for a tax refund",
+    "body": "Dear Taxpayer, you are eligible for a refund of £438.20.",
+    "links": ["http://hmrc-refund-claim.xyz/apply"],
+    "expectedResult": "dangerous"
+  }
+]
