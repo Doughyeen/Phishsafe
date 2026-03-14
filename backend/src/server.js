@@ -6,66 +6,78 @@ dotenv.config();
 const express = require('express');
 const cors = require('cors');
 
+// Import our analysis modules
+const { runAllRules } = require('./rules/index');
+const { calculateThreatScore } = require('./utils/scorer');
+const { getRelevantTip } = require('./education/explanations');
+
 // Create the Express application
 const app = express();
 
 // Middleware
-// cors() allows the Chrome extension to communicate with this server
 app.use(cors());
-// express.json() tells Express to understand JSON data sent in requests
 app.use(express.json());
 
-// Set the port — use the one from .env, or default to 3000
+// Set the port
 const PORT = process.env.PORT || 3000;
 
 // ============================================
 // ROUTES
 // ============================================
 
-// Health check — a simple endpoint to verify the server is running
-// When you visit http://localhost:3000/ in your browser, you'll see this response
+// Health check
 app.get('/', (req, res) => {
   res.json({
     status: 'running',
     name: 'PhishSafe API',
-    version: '1.0.0'
+    version: '1.0.0',
+    rulesActive: 3,
   });
 });
 
-// The main analysis endpoint — this is where the Chrome extension will send emails
-// For now it's a skeleton that returns a dummy response
-// We'll build the real analysis logic on Days 4-7
+// Main analysis endpoint — NOW WITH REAL DETECTION
 app.post('/api/analyse', (req, res) => {
-  // req.body contains the email data sent by the extension
-  const { sender, subject, body, links } = req.body;
+  const { sender, senderDisplayName, subject, body, links } = req.body;
 
-  // Check that we actually received email data
+  // Check that we received some email data
   if (!sender && !subject && !body) {
     return res.status(400).json({
       error: 'No email data provided. Send sender, subject, body, and links.'
     });
   }
 
-  // Dummy response for now — this is the structure the extension will expect
+  // Package the email data
+  const emailData = {
+    sender: sender || '',
+    senderDisplayName: senderDisplayName || sender || '',
+    subject: subject || '',
+    body: body || '',
+    links: links || [],
+  };
+
+  // Run all rules
+  const indicators = runAllRules(emailData);
+
+  // Calculate the threat score
+  const scoring = calculateThreatScore(indicators);
+
+  // Get a relevant education tip
+  const educationTip = getRelevantTip(indicators);
+
+  // Send the response
   res.json({
-    threatScore: 'safe',
-    confidence: 0.95,
-    indicators: [
-      {
-        type: 'domain_check',
-        result: 'pass',
-        label: 'Verified Sender Domain',
-        explanation: 'The sender domain matches the expected domain for this organisation.'
-      }
-    ],
-    educationTip: {
-      title: 'Did you know?',
-      content: 'Legitimate companies almost always email you from their official domain (e.g. @amazon.co.uk, @paypal.com). Check the sender address carefully.'
-    },
+    threatScore: scoring.threatLevel,
+    confidence: scoring.confidence,
+    summary: scoring.summary,
+    score: scoring.score,
+    indicators: indicators,
+    educationTip: educationTip,
     metadata: {
       analysedAt: new Date().toISOString(),
-      rulesChecked: 0,
-      aiUsed: false
+      rulesChecked: 3,
+      totalIndicators: scoring.totalIndicators,
+      totalPassed: scoring.totalPassed,
+      aiUsed: false,
     }
   });
 });
@@ -75,5 +87,6 @@ app.post('/api/analyse', (req, res) => {
 // ============================================
 app.listen(PORT, () => {
   console.log(`PhishSafe API is running on http://localhost:${PORT}`);
+  console.log('Rules active: Domain Check, Link Analysis, Language Analysis');
   console.log('Press Ctrl+C to stop the server');
 });
